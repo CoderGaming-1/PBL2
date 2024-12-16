@@ -1,0 +1,15 @@
+release/DetailOrderWindow.o
+release/OrderDetail.o
+release/StatisticWindow.o
+release/addproductdialog.o
+release/main.o
+release/mainwindow.o
+release/productdetail.o
+release/productwindow.o
+release/moc_DetailOrderWindow.o
+release/moc_OrderDetail.o
+release/moc_StatisticWindow.o
+release/moc_addproductdialog.o
+release/moc_mainwindow.o
+release/moc_productdetail.o
+release/moc_productwindow.o
