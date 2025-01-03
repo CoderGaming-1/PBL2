@@ -1,0 +1,10 @@
+1,Bacon Burger (Beef),Description for Bacon Burger (Beef),5.99,Beef,true
+2,Cheese Burger (Beef),Description for Cheese Burger (Beef),4.99,Beef,true
+3,Chicken Burger (Chicken),Description for Chicken Burger (Chicken),6.49,Beef,true
+4,Spicy Burger (Beef),Description for Spicy Burger (Beef),7.99,Beef,true
+5,Example1 (Beef),Description for Example1 (Beef),0.01,Beef,true
+6,Coke (Medium),Description for Coke (Medium),1.99,Beef,true
+7,Pepsi (Small),Description for Pepsi (Small),1.89,Beef,true
+8,Orange Juice (Large),Description for Orange Juice (Large),2.99,Beef,true
+9,Water (Small),Description for Water (Small),0.99,Beef,true
+10,Peach (Small),Description for Peach (Small),2.01,Beef,true

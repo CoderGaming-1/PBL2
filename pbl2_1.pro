@@ -9,8 +9,16 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    Array.cpp \
+    Burger.cpp \
     DetailOrderWindow.cpp \
+    Drink.cpp \
+    HashTable.cpp \
+    Order.cpp \
     OrderDetail.cpp \
+    OrderItem.cpp \
+    Order_2.cpp \
+    Product.cpp \
     StatisticWindow.cpp \
     addproductdialog.cpp \
     main.cpp \
@@ -19,9 +27,16 @@ SOURCES += \
     productwindow.cpp
 
 HEADERS += \
+    Array.h \
+    Burger.h \
     DetailOrderWindow.h \
+    Drink.h \
+    HashTable.h \
     Order.h \
     OrderDetail.h \
+    OrderItem.h \
+    Order_2.h \
+    Product.h \
     StatisticWindow.h \
     addproductdialog.h \
     mainwindow.h \

@@ -12,6 +12,10 @@
 #include <QTextStream>
 #include <QRegularExpression>
 #include <QDateTime>
+#include <Product.cpp>
+#include <Burger.cpp>
+#include <Drink.cpp>
+#include <HashTable.cpp>
 
 ProductWindow::~ProductWindow() {
     qDebug() << "ProductWindow destructor called";
@@ -25,25 +29,31 @@ void ProductWindow::handleDelete(int row) {
         productNames.removeAt(row);
         productPrices.removeAt(row);
 
+        if (productIds[row].toInt() <= 200) {
+            burgerTable.remove(productIds[row].toInt());
+        } else {
+            drinkTable.remove(productIds[row].toInt());
+        }
+
         // Save the updated products to file
         saveProductsToFile();
     }
 
     // After removing a row, reset connections for the remaining "Update" and "Delete" buttons
-    for (int i = 0; i < productTable->rowCount(); ++i) {
-        QPushButton *updateButton = qobject_cast<QPushButton*>(productTable->cellWidget(i, 2)->layout()->itemAt(0)->widget());
-        QPushButton *deleteButton = qobject_cast<QPushButton*>(productTable->cellWidget(i, 2)->layout()->itemAt(1)->widget());
+    // for (int i = 0; i < productTable->rowCount(); ++i) {
+    //     QPushButton *updateButton = qobject_cast<QPushButton*>(productTable->cellWidget(i, 2)->layout()->itemAt(0)->widget());
+    //     QPushButton *deleteButton = qobject_cast<QPushButton*>(productTable->cellWidget(i, 2)->layout()->itemAt(1)->widget());
 
-        // Reconnect update button to the correct row
-        connect(updateButton, &QPushButton::clicked, this, [=]() {
-            handleUpdate(i);  // Pass the new row index to handleUpdate
-        });
+    //     // Reconnect update button to the correct row
+    //     connect(updateButton, &QPushButton::clicked, this, [=]() {
+    //         handleUpdate(i);  // Pass the new row index to handleUpdate
+    //     });
 
-        // Reconnect delete button to the correct row
-        connect(deleteButton, &QPushButton::clicked, this, [=]() {
-            handleDelete(i);  // Pass the new row index to handleDelete
-        });
-    }
+    //     // Reconnect delete button to the correct row
+    //     connect(deleteButton, &QPushButton::clicked, this, [=]() {
+    //         handleDelete(i);  // Pass the new row index to handleDelete
+    //     });
+    // }
 }
 
 void ProductWindow::handleUpdate(int row) {
@@ -54,7 +64,6 @@ void ProductWindow::handleUpdate(int row) {
 
         // Open ProductDetailDialog window
         ProductDetailDialog *detailDialog = new ProductDetailDialog(name, price, this);
-
         // Show the dialog and process user input
         if (detailDialog->exec() == QDialog::Accepted) {
             // Get updated values and apply them
@@ -63,11 +72,23 @@ void ProductWindow::handleUpdate(int row) {
 
             // Update the table with the new values
             productTable->item(row, 0)->setText(updatedName);
-            productTable->item(row, 1)->setText(QString::number(updatedPrice));
+            productTable->item(row, 2)->setText(QString::number(updatedPrice));
 
             // Update the data in the list
             productNames[row] = updatedName;
             productPrices[row] = updatedPrice;
+
+            if (productIds[row].toInt() <= 200) {
+                Burger newBurger(productIds[row].toInt(), productNames[row].toStdString(),
+                                                productDescriptions[row].toStdString(), productPrices[row],
+                                                productTypes[row].toStdString(), true);
+                burgerTable.update(productIds[row].toInt(), newBurger);
+            } else {
+                Drink newDrink(productIds[row].toInt(), productNames[row].toStdString(),
+                               productDescriptions[row].toStdString(), productPrices[row],
+                               productSizes[row].toStdString());
+                drinkTable.update(productIds[row].toInt(), newDrink);
+            }
 
             // Save the updated products to file
             saveProductsToFile();
@@ -80,24 +101,35 @@ void ProductWindow::handleUpdate(int row) {
 }
 
 void ProductWindow::saveProductsToFile() {
-    QFile file("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "Failed to open products.txt for writing";
-        return;
-    }
+    // QFile file("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
+    // if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    //     qDebug() << "Failed to open products.txt for writing";
+    //     return;
+    // }
 
-    QTextStream out(&file);
-    QString currentDateTime = QDateTime::currentDateTime().toString("dd-MM-yyyy HH:mm:ss"); // Get the current date and time
+    // QTextStream out(&file);
+    // QString currentDateTime = QDateTime::currentDateTime().toString("dd-MM-yyyy HH:mm:ss"); // Get the current date and time
 
-    for (int i = 0; i < productNames.size(); ++i) {
-        out << QString("{\"%1\" %2 %3}\n")  // Add the current timestamp
-                   .arg(productNames[i].replace("\"", "\\\""))  // Escape quotes in names
-                   .arg(productPrices[i])
-                   .arg(currentDateTime);  // Insert the real-time date and time
-    }
+    // for (int i = 0; i < productNames.size(); ++i) {
+    //     out << QString("{\"%1\" %2 %3}\n")  // Add the current timestamp
+    //                .arg(productNames[i].replace("\"", "\\\""))  // Escape quotes in names
+    //                .arg(productPrices[i])
+    //                .arg(currentDateTime);  // Insert the real-time date and time
+    // }
 
-    file.close();
+    // file.close();
+    burgerTable.writeFile("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
+    drinkTable.writeFile("C:/AllFiles/CODE/C++/Data/input_drinks.txt");
 }
+
+HashTable<Burger>& ProductWindow::getBurgerTable() {
+    return burgerTable;
+}
+
+HashTable<Drink>& ProductWindow::getDrinkTable() {
+    return drinkTable;
+}
+
 
 void ProductWindow::loadProductsFromFile() {
     QFile fileBurgers("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
@@ -106,6 +138,11 @@ void ProductWindow::loadProductsFromFile() {
     productNames.clear();
     productPrices.clear();
     productTypes.clear();  // Khởi tạo một list mới để chứa loại sản phẩm
+
+    burgerTable.readFile("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
+    drinkTable.readFile("C:/AllFiles/CODE/C++/Data/input_drinks.txt");
+    cout << burgerTable << '\n';
+    cout << "--------------------" << '\n';
 
     // Load burger data
     if (!fileBurgers.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -129,7 +166,7 @@ void ProductWindow::loadProductsFromFile() {
                 productNames.append(name);
                 productDescriptions.append(description);
                 productPrices.append(price);
-                productSizes.append(size);
+                productSizes.append(Type);
                 productTypes.append(Type);  // Lưu loại "Beef" hoặc "Non-Beef"
             }
         }
@@ -310,24 +347,46 @@ ProductWindow::ProductWindow(QWidget *parent) : QWidget(parent), productTable(ne
     connect(backButton, &QPushButton::clicked, this, &ProductWindow::close);
 }
 void ProductWindow::handleShowAll() {
-    for (int i = 0; i < productTable->rowCount(); ++i) {
-        productTable->showRow(i);  // Show all rows
+    productTable->clear();
+    productTable->setRowCount(0);
+    loadProductsFromFile();
+    productTable->setRowCount(productNames.size());
+    productTable->setColumnCount(4);  // Thêm một cột cho Type
+    productTable->setHorizontalHeaderLabels({"Name", "Type", "Price", "Action"});
+    productTable->horizontalHeader()->setStretchLastSection(true);
+    productTable->verticalHeader()->setVisible(false);
+    // for (int i = 0; i < productTable->rowCount(); ++i) {
+    //     productTable->showRow(i);  // Show all rows
+    // }
+    productTable->setRowCount(productNames.size());
+    for (int i = 0; i < productNames.size(); ++i) {
+        QTableWidgetItem *nameItem = new QTableWidgetItem(productNames[i]);
+        QTableWidgetItem *typeItem = new QTableWidgetItem(productTypes[i]);  // Cập nhật với Type
+        QTableWidgetItem *priceItem = new QTableWidgetItem(QString::number(productPrices[i]));
+
+        productTable->setItem(i, 0, nameItem);
+        productTable->setItem(i, 1, typeItem);  // Thêm Type vào cột thứ 2
+        productTable->setItem(i, 2, priceItem);
     }
 }
 
 // Slot to handle Add button
 // Slot to handle Add button
 void ProductWindow::handleAdd() {
-    AddProductDialog *addDialog = new AddProductDialog(this);
+    AddProductDialog *addDialog = new AddProductDialog(*this);
 
     // Show the dialog and process user input
     if (addDialog->exec() == QDialog::Accepted) {
         QString newName = addDialog->getProductName();
         double newPrice = addDialog->getProductPrice();
+        // QString newDesc = addDialog->getProductDescription();
+        // QString type = addDialog->getProductType();
 
         // Add the new product to the lists
         productNames.append(newName);
         productPrices.append(newPrice);
+        // productDescriptions.append(newDesc);
+        // productTypes.append(type);
 
         // Add the new product to the table
         int row = productTable->rowCount();
@@ -347,15 +406,16 @@ void ProductWindow::handleAdd() {
         productTable->setCellWidget(row, 2, actionWidget);
 
         // Reconnect buttons after adding new row
-        connect(updateButton, &QPushButton::clicked, this, [=]() {
-            handleUpdate(row);  // Pass the new row index to handleUpdate
-        });
-        connect(deleteButton, &QPushButton::clicked, this, [=]() {
-            handleDelete(row);  // Handle delete for the new row
-        });
+        // connect(updateButton, &QPushButton::clicked, this, [=]() {
+        //     handleUpdate(row);  // Pass the new row index to handleUpdate
+        // });
+        // connect(deleteButton, &QPushButton::clicked, this, [=]() {
+        //     handleDelete(row);  // Handle delete for the new row
+        // });
 
         // Save the new product to the file
         saveProductsToFile();
+        reconnectButtons();
     }
 
     addDialog->deleteLater();

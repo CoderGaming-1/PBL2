@@ -1,0 +1,16 @@
+debug/DetailOrderWindow.o
+debug/OrderDetail.o
+debug/Order_2.o
+debug/StatisticWindow.o
+debug/addproductdialog.o
+debug/main.o
+debug/mainwindow.o
+debug/productdetail.o
+debug/productwindow.o
+debug/moc_DetailOrderWindow.o
+debug/moc_OrderDetail.o
+debug/moc_StatisticWindow.o
+debug/moc_addproductdialog.o
+debug/moc_mainwindow.o
+debug/moc_productdetail.o
+debug/moc_productwindow.o

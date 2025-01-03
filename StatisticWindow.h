@@ -10,7 +10,7 @@
 #include <QLabel>
 #include <QDebug>
 #include <QVector>
-#include "Order.h"  // Include the Order struct
+#include "Order_2.h"
 
 class StatisticWindow : public QWidget
 {
@@ -19,7 +19,7 @@ class StatisticWindow : public QWidget
 public:
     explicit StatisticWindow(QWidget *parent = nullptr);
     void filterOrdersByDate(const QDateTime& startDate, const QDateTime& endDate, QTableWidget* table);
-    void showOrderDetails(const Order& order);
+    void showOrderDetails(const Order_2& order);
 private slots:
     void onResearchButtonClicked();  // Slot to filter data based on the date range
     void onRowClicked(int row, int column);  // Slot to handle row click
@@ -30,8 +30,8 @@ private:
     QPushButton* researchButton;     // Button to trigger the filtering
     QTableWidget* ordersTable;       // Table to display the filtered orders
 
-    QVector<Order> getAllOrders();                // Fetch all orders
-    QVector<Order> getFilteredOrders(const QDateTime& startDate, const QDateTime& endDate);  // Filter orders by date
+    QVector<Order_2> getAllOrders();                // Fetch all orders
+    QVector<Order_2> getFilteredOrders(const QDateTime& startDate, const QDateTime& endDate);  // Filter orders by date
 };
 
 #endif // STATISTICWINDOW_H

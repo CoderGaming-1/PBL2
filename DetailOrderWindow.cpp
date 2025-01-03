@@ -4,15 +4,15 @@
 #include <QDebug>
 #include <QTextEdit>
 
-DetailOrderWindow::DetailOrderWindow(const Order& order, QWidget* parent)
+DetailOrderWindow::DetailOrderWindow(const Order_2& order, QWidget* parent)
     : QDialog(parent), order(order)  // Initialize 'order' in the initializer list
 {
     // Set up the UI for showing the order details (you can use labels or other widgets)
     QVBoxLayout* layout = new QVBoxLayout(this);
 
-    layout->addWidget(new QLabel("Order ID: " + order.orderID));
-    layout->addWidget(new QLabel("Client Name: " + order.nameClient));
-    layout->addWidget(new QLabel("Date: " + order.date.toString("dd/MM/yyyy HH:mm")));
+    layout->addWidget(new QLabel("Order ID: " + order.orderId));
+    layout->addWidget(new QLabel("Client Name: " + order.customerName));
+    layout->addWidget(new QLabel("Date: " + order.datetime.toString("dd/MM/yyyy HH:mm")));
 
     // Add a title for the product details section
     QLabel* productsTitleLabel = new QLabel("Products:", this);
@@ -24,7 +24,8 @@ DetailOrderWindow::DetailOrderWindow(const Order& order, QWidget* parent)
     productDetailsTextEdit->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
     // Split the products into lines and underline them
-    QStringList productList = order.productDetails.split(";"); // Assuming the products are separated by semicolons
+    // QStringList productList = order.items.split(";"); // Assuming the products are separated by semicolons
+    QStringList productList;
     QString formattedProductDetails;
 
     for (const QString& product : productList) {

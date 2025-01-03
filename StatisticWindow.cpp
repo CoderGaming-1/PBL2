@@ -65,12 +65,12 @@ void StatisticWindow::onRowClicked(int row, int column) {
         QString orderID = ordersTable->item(row, 0)->text();
         qDebug() << "Order ID:" << orderID;
 
-        QVector<Order> filteredOrders = getFilteredOrders(startDateEdit->dateTime(), endDateEdit->dateTime());
+        QVector<Order_2> filteredOrders = getFilteredOrders(startDateEdit->dateTime(), endDateEdit->dateTime());
         bool orderFound = false;
 
-        for (const Order& order : filteredOrders) {
-            if (order.orderID == orderID) {
-                qDebug() << "Order found:" << order.orderID;
+        for (const Order_2& order : filteredOrders) {
+            if (order.orderId == orderID) {
+                qDebug() << "Order found:" << order.orderId;
                 showOrderDetails(order); // Call the showOrderDetails function here
                 orderFound = true;
                 break;
@@ -83,79 +83,171 @@ void StatisticWindow::onRowClicked(int row, int column) {
     }
 }
 
+bool parseOrder(const QString& line, Order_2& order) {
+    QStringList parts;
+    QString itemsStr, datetimeStr;
 
+    // Custom parsing logic for the line
+    int pos = 0;
+    if ((pos = line.indexOf(',')) == -1) return false;
+    order.orderId = line.left(pos);
+    QString remaining = line.mid(pos + 1);
 
+    // Extract customer name
+    pos = remaining.indexOf(',');
+    if (pos == -1) return false;
+    order.customerName = remaining.left(pos).trimmed();
+    remaining = remaining.mid(pos + 1);
 
+    // Extract quoted items field
+    if (remaining.startsWith('"')) {
+        pos = remaining.indexOf('"', 1);
+        if (pos == -1) return false;
+        itemsStr = remaining.mid(1, pos - 1);
+        remaining = remaining.mid(pos + 2); // Skip closing quote and comma
+    } else {
+        pos = remaining.indexOf(',');
+        if (pos == -1) return false;
+        itemsStr = remaining.left(pos);
+        remaining = remaining.mid(pos + 1);
+    }
 
-QVector<Order> StatisticWindow::getAllOrders() {
-    QVector<Order> orders;
+    // Extract total amount
+    pos = remaining.indexOf(',');
+    if (pos == -1) return false;
+    order.totalAmount = remaining.left(pos).toDouble();
+    datetimeStr = remaining.mid(pos + 1);
+
+    // Parse datetime
+    order.datetime = QDateTime::fromString(datetimeStr.trimmed(), "yyyy-MM-dd HH:mm:ss");
+    if (!order.datetime.isValid()) {
+        qDebug() << "Invalid datetime format:" << datetimeStr;
+        return false;
+    }
+
+    // Parse items field
+    QVector<OrderItem> items;
+    QStringList itemList = itemsStr.split(';', Qt::SkipEmptyParts);
+    for (const QString& itemStr : itemList) {
+        QStringList itemParts = itemStr.split(',');
+        if (itemParts.size() == 2) {
+            bool ok1 = false, ok2 = false;
+            int productId = itemParts[0].toInt(&ok1);
+            int quantity = itemParts[1].toInt(&ok2);
+            if (ok1 && ok2) {
+                items.append(OrderItem(productId, quantity));
+            }
+        }
+    }
+    order.setItems(items);
+
+    return true;
+}
+
+QVector<Order_2> StatisticWindow::getAllOrders() {
+    // QVector<Order> orders;
+
+    // QFile file("C:/AllFiles/Code/C++/Data/orders.txt");
+    // if (!file.exists()) {
+    //     qDebug() << "File does not exist at:" << file.fileName();
+    //     return orders;
+    // }
+    // if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    //     qDebug() << "Could not open file for reading at:" << file.fileName();
+    //     return orders;
+    // }
+
+    // qDebug() << "File successfully opened.";
+    // QTextStream in(&file);
+    // while (!in.atEnd()) {
+    //     QString line = in.readLine();
+    //     qDebug() << "Line read:" << line;
+
+    //     QStringList parts = line.split(",", Qt::SkipEmptyParts);
+    //     qDebug() << "Split parts:" << parts;
+
+    //     if (parts.size() >= 6) {
+    //         // Read the first four fields: OrderID, Name Client, TotalPayment, Date Purchase
+    //         QString orderID = parts[0];
+    //         QString nameClient = parts[1];
+    //         QString totalPayment = parts[3];
+    //         QString datePurchase = parts[4] + " " + parts[5];
+
+    //         // Parse the date field into QDateTime
+    //         QDateTime date = QDateTime::fromString(datePurchase, "dd/MM/yyyy HH:mm");
+    //         if (!date.isValid()) {
+    //             qDebug() << "Invalid date format for:" << datePurchase;
+    //             continue;
+    //         }
+
+    //         // Process product details after the first four fields
+    //         QString productDetails;
+    //         int currentIndex = 5;
+    //         while (currentIndex < parts.size()) {
+    //             productDetails += parts[currentIndex++];
+    //             if (currentIndex < parts.size()) {
+    //                 productDetails += " ";
+    //             }
+    //         }
+
+    //         // Create an order object with the parsed details
+    //         Order_2 order = {orderID, nameClient, totalPayment.toDouble(), productDetails, date};
+    //         orders.append(order);
+
+    //         qDebug() << "Order parsed:" << order.orderID << order.nameClient << order.totalPayment
+    //                  << order.productDetails << order.date.toString();
+    //     }
+    // }
+
+    // file.close();
+    // return orders;
+    QVector<Order_2> orders;
 
     QFile file("C:/AllFiles/Code/C++/Data/orders.txt");
     if (!file.exists()) {
         qDebug() << "File does not exist at:" << file.fileName();
         return orders;
     }
+
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
         qDebug() << "Could not open file for reading at:" << file.fileName();
         return orders;
     }
 
-    qDebug() << "File successfully opened.";
     QTextStream in(&file);
     while (!in.atEnd()) {
-        QString line = in.readLine();
-        qDebug() << "Line read:" << line;
-
-        QStringList parts = line.split(" ");
-        qDebug() << "Split parts:" << parts;
-
-        if (parts.size() >= 6) {
-            // Read the first four fields: OrderID, Name Client, TotalPayment, Date Purchase
-            QString orderID = parts[0];
-            QString nameClient = parts[1];
-            QString totalPayment = parts[2];
-            QString datePurchase = parts[3] + " " + parts[4];
-
-            // Parse the date field into QDateTime
-            QDateTime date = QDateTime::fromString(datePurchase, "dd/MM/yyyy HH:mm");
-            if (!date.isValid()) {
-                qDebug() << "Invalid date format for:" << datePurchase;
-                continue;
+        QString line = in.readLine().trimmed();
+        if (!line.isEmpty()) {
+            Order_2 order;
+            if (parseOrder(line, order)) {
+                orders.append(order);
+            } else {
+                qDebug() << "Failed to parse line:" << line;
             }
-
-            // Process product details after the first four fields
-            QString productDetails;
-            int currentIndex = 5;
-            while (currentIndex < parts.size()) {
-                productDetails += parts[currentIndex++];
-                if (currentIndex < parts.size()) {
-                    productDetails += " ";
-                }
-            }
-
-            // Create an order object with the parsed details
-            Order order = {orderID, nameClient, totalPayment.toDouble(), productDetails, date};
-            orders.append(order);
-
-            qDebug() << "Order parsed:" << order.orderID << order.nameClient << order.totalPayment
-                     << order.productDetails << order.date.toString();
         }
     }
 
     file.close();
+    for (const Order_2& order : orders) {
+        qDebug() << "Order ID:" << order.orderId
+                 << "Customer Name:" << order.customerName
+                 << "Total Amount:" << order.totalAmount
+                 << "Date:" << order.datetime.toString()
+                 << "Items:" << order.items.size();
+    }
     return orders;
 }
 
-QVector<Order> StatisticWindow::getFilteredOrders(const QDateTime& startDate, const QDateTime& endDate) {
-    QVector<Order> allOrders = getAllOrders();
-    QVector<Order> filteredOrders;
+QVector<Order_2> StatisticWindow::getFilteredOrders(const QDateTime& startDate, const QDateTime& endDate) {
+    QVector<Order_2> allOrders = getAllOrders();
+    QVector<Order_2> filteredOrders;
 
     qDebug() << "Total orders retrieved:" << allOrders.size();
 
-    for (const Order& order : allOrders) {
-        if (order.date >= startDate && order.date <= endDate) {
+    for (const Order_2& order : allOrders) {
+        if (order.datetime >= startDate && order.datetime <= endDate) {
             filteredOrders.append(order);
-            qDebug() << "Filtered Order:" << order.orderID << order.nameClient << order.date.toString();
+            qDebug() << "Filtered Order:" << order.orderId << order.customerName << order.datetime.toString();
         }
     }
 
@@ -165,7 +257,7 @@ QVector<Order> StatisticWindow::getFilteredOrders(const QDateTime& startDate, co
 
 
 void StatisticWindow::filterOrdersByDate(const QDateTime& startDate, const QDateTime& endDate, QTableWidget* table) {
-    QVector<Order> filteredOrders = getFilteredOrders(startDate, endDate);
+    QVector<Order_2> filteredOrders = getFilteredOrders(startDate, endDate);
 
     table->setRowCount(0); // Clear existing rows
 
@@ -173,15 +265,15 @@ void StatisticWindow::filterOrdersByDate(const QDateTime& startDate, const QDate
         qDebug() << "No orders found in the specified date range.";
     }
 
-    for (const Order& order : filteredOrders) {
-        qDebug() << "Adding row for Order ID:" << order.orderID; // Debug output
+    for (const Order_2& order : filteredOrders) {
+        qDebug() << "Adding row for Order ID:" << order.orderId; // Debug output
         int row = table->rowCount();
         table->insertRow(row);
 
-        table->setItem(row, 0, new QTableWidgetItem(order.orderID));
-        table->setItem(row, 1, new QTableWidgetItem(order.nameClient));
-        table->setItem(row, 2, new QTableWidgetItem(QString::number(order.totalPayment, 'f', 2)));
-        table->setItem(row, 3, new QTableWidgetItem(order.date.toString("dd/MM/yyyy HH:mm")));
+        table->setItem(row, 0, new QTableWidgetItem(order.orderId));
+        table->setItem(row, 1, new QTableWidgetItem(order.customerName));
+        table->setItem(row, 2, new QTableWidgetItem(QString::number(order.totalAmount, 'f', 2)));
+        table->setItem(row, 3, new QTableWidgetItem(order.datetime.toString("dd/MM/yyyy HH:mm")));
 
         // Add a button to the "Detail" column
         QPushButton* detailButton = new QPushButton("hint", this);
@@ -205,23 +297,19 @@ void StatisticWindow::filterOrdersByDate(const QDateTime& startDate, const QDate
 }
 
 // In StatisticWindow.cpp
-void StatisticWindow::showOrderDetails(const Order& order) {
+void StatisticWindow::showOrderDetails(const Order_2& order) {
     // You can open a new window to display the order details,
     // like opening a DetailOrderWindow or just printing the details to the console
 
-    qDebug() << "Order ID:" << order.orderID;
-    qDebug() << "Client Name:" << order.nameClient;
-    qDebug() << "Date:" << order.date.toString();
-    qDebug() << "Products:" << order.productDetails;
+    qDebug() << "Order ID:" << order.orderId;
+    qDebug() << "Client Name:" << order.customerName;
+    qDebug() << "Date:" << order.datetime.toString();
+    // qDebug() << "Products:" << order.items;
 
     // Example: You can open a DetailOrderWindow here if you want to show the details in a dialog:
     DetailOrderWindow* detailWindow = new DetailOrderWindow(order, this);
     detailWindow->exec();
 }
-
-
-
-
 
 void StatisticWindow::onResearchButtonClicked() {
     // Get the selected date range

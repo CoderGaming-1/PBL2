@@ -10,6 +10,11 @@
 #include <QTextStream>
 #include <QRegularExpression>
 #include <QDebug>
+#include <Product.h>
+#include <Burger.h>
+#include <Drink.h>
+#include <HashTable.h>
+
 
 class ProductWindow : public QWidget {
     Q_OBJECT
@@ -17,6 +22,8 @@ class ProductWindow : public QWidget {
 public:
     explicit ProductWindow(QWidget *parent = nullptr);
     ~ProductWindow() override;
+    HashTable<Burger>& getBurgerTable();
+    HashTable<Drink>& getDrinkTable();
 
 private slots:
     void handleUpdate(int row);
@@ -29,6 +36,9 @@ private slots:
     void reconnectButtons();
 
 private:
+    // HashTable<Product> productTableHash;
+    HashTable<Burger> burgerTable;
+    HashTable<Drink> drinkTable;
     QTableWidget *productTable;
     QString getProductType() const;
     // Product data
