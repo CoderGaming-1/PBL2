@@ -1,0 +1,30 @@
+1,Bacon Burger (Beef),Description for Bacon Burger (Beef),5.99,Beef,true
+2,Cheese Burger (Beef),Description for Cheese Burger (Beef),5.99,Beef,true
+3,Cheese Burger (Chicken),Description for Cheese Burger (Chicken),4.99,Beef,true
+4,Chicken Burger (Chicken),Description for Chicken Burger (Chicken),6.49,Beef,true
+5,Spicy Burger (Beef),Description for Spicy Burger (Beef),7.99,Beef,true
+6,Spicy Burger (Chicken),Description for Spicy Burger (Chicken),6.99,Beef,true
+7,Dog Burger (Dog),Description for Dog Burger (Dog),2.20,Beef,true
+8,Hot Burger (Chicken),Description for Hot Burger (Chicken),1.50,Beef,true
+9,Burr (Chicken),Description for Burr (Chicken),2.00,Beef,true
+10,Burr (Beef),Description for Burr (Beef),2.00,Beef,true
+11,B (Chicken),Description for B (Chicken),0.01,Beef,true
+12,S (S),Description for S (S),0.01,Beef,true
+13,Coke (Small),Description for Coke (Small),0.99,Beef,true
+14,Coke (Medium),Description for Coke (Medium),1.99,Beef,true
+15,Coke (Large),Description for Coke (Large),2.99,Beef,true
+16,Pepsi (Small),Description for Pepsi (Small),0.89,Beef,true
+17,Pepsi (Medium),Description for Pepsi (Medium),1.89,Beef,true
+18,Pepsi (Large),Description for Pepsi (Large),2.89,Beef,true
+19,Orange Juice (Small),Description for Orange Juice (Small),1.99,Beef,true
+20,Orange Juice (Medium),Description for Orange Juice (Medium),2.99,Beef,true
+21,Orange Juice (Large),Description for Orange Juice (Large),3.99,Beef,true
+22,Water (Small),Description for Water (Small),0.05,Beef,true
+23,Lemonade (Small),Description for Lemonade (Small),2.10,Beef,true
+24,WaterMelon (Small),Description for WaterMelon (Small),2.30,Beef,true
+25,Coke (Small),Description for Coke (Small),0.01,Beef,true
+26,Water (Small),Description for Water (Small),2.00,Beef,true
+27,Drinkss (Small),Description for Drinkss (Small),0.01,Beef,true
+28,S (S),Description for S (S),0.01,Beef,true
+29,S (S),Description for S (S),0.01,Beef,true
+30,S (S218),Description for S (S218),0.01,Beef,true

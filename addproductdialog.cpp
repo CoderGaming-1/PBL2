@@ -1,9 +1,12 @@
 #include "addproductdialog.h"
+#include "Burger.h"
+#include "Drink.h"
+#include "productwindow.h"
 #include <QFile>
 #include <QTextStream>
 #include <QMessageBox>
 
-AddProductDialog::AddProductDialog(QWidget *parent)
+AddProductDialog::AddProductDialog(ProductWindow &productWindow, QWidget *parent)
     : QDialog(parent) {
     // Set up UI components
     QVBoxLayout *layout = new QVBoxLayout(this);
@@ -49,7 +52,10 @@ AddProductDialog::AddProductDialog(QWidget *parent)
     // Connect signals
     connect(productCategoryComboBox, &QComboBox::currentTextChanged,
             this, &AddProductDialog::onProductTypeChanged);
-    connect(addButton, &QPushButton::clicked, this, &AddProductDialog::saveToFile);
+    connect(addButton, &QPushButton::clicked, this, [this, &productWindow]() {
+        saveToFile(productWindow);
+    });
+
 
     // Populate the type combo box when the dialog is first opened
     onProductTypeChanged(productCategoryComboBox->currentText());
@@ -90,7 +96,7 @@ void AddProductDialog::onProductTypeChanged(const QString &type) {
     }
 }
 
-void AddProductDialog::saveToFile() {
+void AddProductDialog::saveToFile(ProductWindow &productWindow) {
     QString category = productCategoryComboBox->currentText();
     QString name = getProductName();
     QString description = getProductDescription();
@@ -127,9 +133,19 @@ void AddProductDialog::saveToFile() {
         QTextStream out(&file);
 
         if (category == "Drink") {
-            out << id << "," << name << "," << description << "," << price << "," << type;
+            Drink newDrink(id, name.toStdString(), description.toStdString(), price, type.toStdString());
+            HashTable<Drink> &table = productWindow.getDrinkTable();
+            table.readFile(filePath.toStdString());
+            table.add(newDrink);
+            out << '\n' << id << "," << name << "," << description << "," << price << "," << type;
         } else if (category == "Burger") {
-            out << id << "," << name << "," << description << "," << price << "," << type << "," << (isSpicy() ? "true" : "false");
+            Burger newBurger(id, name.toStdString(), description.toStdString(), price, type.toStdString(), isSpicy() ? true : false);
+            HashTable<Burger> &table = productWindow.getBurgerTable();
+            table.readFile(filePath.toStdString());
+            table.add(newBurger);
+            cout << "asdofijaosifd" << '\n';
+            cout << table << '\n';
+            out << '\n' << id << "," << name << "," << description << "," << price << "," << type << "," << (isSpicy() ? "true" : "false");
         }
 
         file.close();

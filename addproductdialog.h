@@ -9,12 +9,13 @@
 #include <QLabel>
 #include <QComboBox> // Add QComboBox here
 #include <QCheckBox>
+#include "productwindow.h"
 
 class AddProductDialog : public QDialog {
     Q_OBJECT
 
 public:
-    explicit AddProductDialog(QWidget *parent = nullptr);
+    explicit AddProductDialog(ProductWindow &productWindow, QWidget *parent = nullptr);
 
     QString getProductName() const;
     QString getProductDescription() const;
@@ -24,7 +25,7 @@ public:
 
 private slots:
     void onProductTypeChanged(const QString &type);
-    void saveToFile();
+    void saveToFile(ProductWindow &productWindow);
 
 private:
     QLineEdit *nameEdit;

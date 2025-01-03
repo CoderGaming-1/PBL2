@@ -15,11 +15,24 @@
 #include <QTextStream>
 #include <QDateTime>
 #include "StatisticWindow.h"
+#include <Product.h>
+#include <Burger.h>
+#include <Drink.h>
+#include <HashTable.h>
+#include <Order.cpp>
+#include <OrderItem.cpp>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     tableWidget = new QTableWidget(this);  // Initialize tableWidget here
     setupUI();
     setupTable();
+    HashTable<Burger> burgerTable;
+    HashTable<Drink> drinkTable;
+    HashTable<Order> orderTable;
+    burgerTable.readFile("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
+    drinkTable.readFile("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
+    orderTable.readFile("C:/AllFiles/CODE/C++/Data/orders.txt");
+    cout << "xxxxxxxxxxx" << orderTable << '\n';
 }
 
 MainWindow::~MainWindow() = default;
@@ -107,7 +120,7 @@ void MainWindow::filterOrdersByDate(const QDateTime& startDate, const QDateTime&
 
     while (!in.atEnd()) {
         QString line = in.readLine();
-        QStringList fields = line.split(' ');
+        QStringList fields = line.split(",", Qt::SkipEmptyParts);
 
         if (fields.size() < 6) {
             qDebug() << "Malformed line skipped:" << line;
@@ -269,9 +282,18 @@ void MainWindow::handleSearch() {
 }
 
 void MainWindow::handleShowAll() {
-    for (int i = 0; i < tableWidget->rowCount(); ++i) {
-        tableWidget->showRow(i);
-    }
+    tableWidget->clear();
+    tableWidget->setRowCount(0);
+    loadFile(R"(C:\AllFiles\CODE\C++\Data\input_burgers.txt)");
+    // Load drinks from drinks.txt
+    loadFile(R"(C:\AllFiles\CODE\C++\Data\input_drinks.txt)");
+    // for (int i = 0; i < tableWidget->rowCount(); ++i) {
+    //     tableWidget->showRow(i);
+    // }
+    // tableWidget->setRowCount(0);
+    tableWidget->setColumnCount(5);
+    QStringList headers = {"Name", "Price", "Quantity", "Increment", "Decrement"};
+    tableWidget->setHorizontalHeaderLabels(headers);
 }
 
 void MainWindow::openOrderDetail() {
@@ -324,7 +346,7 @@ void MainWindow::handleIncrement() {
 
         if (currentQuantity >= 0) {
             updateQuantity(visualRow, 1); // Cập nhật số lượng tại hàng hiển thị
-            saveToFile();
+            // saveToFile();
             updateTotal(); // Cập nhật tổng sau khi tăng
         }
     }
@@ -340,7 +362,7 @@ void MainWindow::handleDecrement() {
 
         if (currentQuantity > 0) {
             updateQuantity(visualRow, -1); // Cập nhật số lượng tại hàng hiển thị
-            saveToFile();
+            // saveToFile();
             updateTotal(); // Cập nhật tổng sau khi giảm
         }
     }
@@ -376,37 +398,37 @@ void MainWindow::updateTotal() {
 }
 
 void MainWindow::saveToFile() {
-    QFile file("products.txt");
+    // QFile file("products.txt");
 
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "Failed to open products.txt for writing.";
-        return;
-    }
+    // if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    //     qDebug() << "Failed to open products.txt for writing.";
+    //     return;
+    // }
 
-    QTextStream out(&file);
+    // QTextStream out(&file);
 
-    for (int row = 0; row < tableWidget->rowCount(); ++row) {
-        QString name = tableWidget->item(row, 0)->text();
-        QString price = tableWidget->item(row, 1)->text();
-        QString quantity = tableWidget->item(row, 2)->text();
+    // for (int row = 0; row < tableWidget->rowCount(); ++row) {
+    //     QString name = tableWidget->item(row, 0)->text();
+    //     QString price = tableWidget->item(row, 1)->text();
+    //     QString quantity = tableWidget->item(row, 2)->text();
 
-        // Create CSV-like format:
-        // ID,Name,Description,Price,Category,Availability
-        // For simplicity, we'll generate dummy data for ID and Description
-        // Category can be determined from the price or other criteria if needed
-        int id = row + 1; // Generate a simple ID (can be replaced with actual ID logic)
-        QString description = "Description for " + name;
-        QString category = "Beef"; // Or derive based on product name or other logic
-        bool isAvailable = true; // Assume products are available by default
+    //     // Create CSV-like format:
+    //     // ID,Name,Description,Price,Category,Availability
+    //     // For simplicity, we'll generate dummy data for ID and Description
+    //     // Category can be determined from the price or other criteria if needed
+    //     int id = row + 1; // Generate a simple ID (can be replaced with actual ID logic)
+    //     QString description = "Description for " + name;
+    //     QString category = "Beef"; // Or derive based on product name or other logic
+    //     bool isAvailable = true; // Assume products are available by default
 
-        out << id << ","
-            << name << ","
-            << description << ","
-            << price << ","
-            << category << ","
-            << (isAvailable ? "true" : "false") << "\n";
-    }
+    //     out << id << ","
+    //         << name << ","
+    //         << description << ","
+    //         << price << ","
+    //         << category << ","
+    //         << (isAvailable ? "true" : "false") << "\n";
+    // }
 
-    file.close();
+    // file.close();
 }
 
