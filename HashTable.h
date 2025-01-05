@@ -43,6 +43,22 @@ public:
 
     template <typename U>
     friend ostream &operator<<(ostream &os, const HashTable<U> &hashTable);
+    int getTableSize() const {
+        return tableSize;
+    }
+
+    bool isOccupied(int index) const {
+        return occupied[index];
+    }
+
+    bool isTombstone(int index) const {
+        return tombstone[index];
+    }
+
+    const T& getItemAt(int index) const {
+        return table[index];
+    }
+
 };
 
 // #include "HashTable.cpp"

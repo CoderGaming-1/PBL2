@@ -21,6 +21,7 @@
 #include <HashTable.h>
 #include <Order.cpp>
 #include <OrderItem.cpp>
+#include <vector>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     tableWidget = new QTableWidget(this);  // Initialize tableWidget here
@@ -30,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     HashTable<Drink> drinkTable;
     HashTable<Order> orderTable;
     burgerTable.readFile("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
-    drinkTable.readFile("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
+    drinkTable.readFile("C:/AllFiles/CODE/C++/Data/input_drinks.txt");
     orderTable.readFile("C:/AllFiles/CODE/C++/Data/orders.txt");
     cout << "xxxxxxxxxxx" << orderTable << '\n';
 }
@@ -207,6 +208,8 @@ void MainWindow::loadFile(const QString& filePath) {
         double price = fields[3].trimmed().toDouble();
         QString size = fields[4].trimmed();
 
+        productIds.append(id);
+
         // Append the size to the name
         QString nameWithSize = QString("%1 (%2)").arg(name).arg(size);
 
@@ -241,8 +244,8 @@ void MainWindow::loadFile(const QString& filePath) {
     file.close();
 }
 
-QList<QList<QString>> MainWindow::getFilteredProducts() {
-    QList<QList<QString>> filteredProducts;
+vector<QList<QString>> MainWindow::getFilteredProducts() {
+    vector<QList<QString>> filteredProducts;
 
     for (int row = 0; row < tableWidget->rowCount(); ++row) {
         QTableWidgetItem* quantityItem = tableWidget->item(row, 2);
@@ -254,14 +257,39 @@ QList<QList<QString>> MainWindow::getFilteredProducts() {
         int quantity = quantityItem->text().toInt();
         qDebug() << "Row" << row << "quantity:" << quantity;
 
+        // // if (quantity >= 1) {
+        // //     QList<QString> productData;
+        // //     for (int col = 0; col < tableWidget->columnCount(); ++col) {
+        // //         QTableWidgetItem* item = tableWidget->item(row, col);
+        // //         productData.append(item ? item->text() : "");
+        // //     }
+        // //     filteredProducts.append(productData);
+        // // }
         if (quantity >= 1) {
             QList<QString> productData;
-            for (int col = 0; col < tableWidget->columnCount(); ++col) {
-                QTableWidgetItem* item = tableWidget->item(row, col);
-                productData.append(item ? item->text() : "");
+            // for (int col = 0; col < tableWidget->columnCount(); ++col) {
+            // Add product name, price, and quantity
+            QTableWidgetItem* nameItem = tableWidget->item(row, 0); // Name
+            QTableWidgetItem* priceItem = tableWidget->item(row, 1); // Price
+            QTableWidgetItem* quantityItem = tableWidget->item(row, 2); // Quantity
+            qDebug() << nameItem->text();
+            productData.append(nameItem ? nameItem->text() : ""); // Name
+            productData.append(priceItem ? priceItem->text() : ""); // Price
+            productData.append(quantityItem ? quantityItem->text() : ""); // Quantity
+
+            // Add the corresponding product ID
+            if (row < productIds.size()) {
+                productData.append(productIds[row]); // Product ID
+            } else {
+                qDebug() << "Row index" << row << "exceeds productIds size.";
+                productData.append(""); // Append empty string if ID not available
             }
-            filteredProducts.append(productData);
+            qDebug() << "Appending product data:" << productData;
+            // }
+            // Append the collected data to filteredProducts
+            filteredProducts.push_back(productData);
         }
+
     }
 
     qDebug() << "Filtered products:" << filteredProducts;
@@ -297,20 +325,9 @@ void MainWindow::handleShowAll() {
 }
 
 void MainWindow::openOrderDetail() {
-    QList<QList<QString>> filteredProducts = getFilteredProducts();
-
-    if (filteredProducts.isEmpty()) {
-        qDebug() << "No products to display in OrderDetail.";
-        return;
-    }
+    vector<QList<QString>> filteredProducts = getFilteredProducts();
 
     qDebug() << "Filtered products passed to OrderDetail:" << filteredProducts;
-
-    if (orderDetailWindow != nullptr) {
-        orderDetailWindow->close();
-        delete orderDetailWindow;
-        orderDetailWindow = nullptr;
-    }
 
     orderDetailWindow = new OrderDetail(this);
     orderDetailWindow->setAttribute(Qt::WA_DeleteOnClose);

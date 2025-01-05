@@ -5,12 +5,20 @@
 #include <QDebug>
 #include <QHeaderView>
 #include "DetailOrderWindow.h"
+#include "HashTable.h"
+#include "HashTable.cpp"
+#include "Order.h"
+
+HashTable<Order> ordersHashTable;
+
 StatisticWindow::StatisticWindow(QWidget *parent)
     : QWidget(parent) {
     // Initialize UI elements
     startDateEdit = new QDateTimeEdit(this);
     endDateEdit = new QDateTimeEdit(this);
     researchButton = new QPushButton("Research", this);
+    ascendButton = new QPushButton("Ascend", this);  // New Ascend button
+    descendButton = new QPushButton("Descend", this);  // New Descend button
     ordersTable = new QTableWidget(this);
 
     // Set up date edit widgets to display only the date (no time)
@@ -40,20 +48,38 @@ StatisticWindow::StatisticWindow(QWidget *parent)
     dateLayout->addWidget(endDateEdit);
     mainLayout->addLayout(dateLayout);
 
-    mainLayout->addWidget(researchButton);
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
+    buttonLayout->addWidget(researchButton);
+    buttonLayout->addWidget(ascendButton);  // Add Ascend button to layout
+    buttonLayout->addWidget(descendButton);  // Add Descend button to layout
+    mainLayout->addLayout(buttonLayout);
+
     mainLayout->addWidget(ordersTable);
 
     // Set the layout for the window
     setLayout(mainLayout);
 
-    // Connect button click to the appropriate slot
+    // Connect button clicks to appropriate slots
     connect(researchButton, &QPushButton::clicked, this, &StatisticWindow::onResearchButtonClicked);
+    connect(ascendButton, &QPushButton::clicked, this, &StatisticWindow::onAscendButtonClicked);  // Ascend button
+    connect(descendButton, &QPushButton::clicked, this, &StatisticWindow::onDescendButtonClicked);  // Descend button
 
     // Connect row click to the onRowClicked slot (passing row and column as arguments)
     connect(ordersTable, &QTableWidget::cellClicked, this, &StatisticWindow::onRowClicked);
 
     // Populate the table with initial data
     filterOrdersByDate(QDateTime::fromString("01/01/2000", "dd/MM/yyyy"), QDateTime::currentDateTime(), ordersTable);
+}
+
+
+void StatisticWindow::onAscendButtonClicked() {
+    // Sort by the 3rd column (TotalPayment) in ascending order
+    ordersTable->sortItems(2, Qt::AscendingOrder);
+}
+
+void StatisticWindow::onDescendButtonClicked() {
+    // Sort by the 3rd column (TotalPayment) in descending order
+    ordersTable->sortItems(2, Qt::DescendingOrder);
 }
 
 

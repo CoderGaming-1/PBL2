@@ -11,6 +11,8 @@
 #include <QTextStream>
 #include <QRegularExpression>
 #include <QDebug>
+#include <vector>
+using namespace std;
 
 // Forward declarations for custom windows
 class OrderDetail;
@@ -24,11 +26,12 @@ public:
     ~MainWindow() override;
     void filterOrdersByDate(const QDateTime& startDate, const QDateTime& endDate, QTableWidget* table);
 private:
+    QStringList productIds;
     OrderDetail* orderDetailWindow;
     QTableWidget* tableWidget;
     QTextBrowser* totalTextBrowser;
     QLineEdit* searchInput;
-    QList<QList<QString>> getFilteredProducts();
+    vector<QList<QString>> getFilteredProducts();
     void setupUI();
     void setupTable();
     void updateQuantity(int row, int delta);
