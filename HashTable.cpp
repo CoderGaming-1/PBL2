@@ -84,6 +84,17 @@ void HashTable<T>::resize()
     delete[] oldTombstone;
 }
 
+template <typename T>
+int HashTable<T>::getUsedSlot() const {
+    int used = 0;
+    for (int i = 0; i < tableSize; ++i) {
+        if (occupied[i]) {
+            ++used;
+        }
+    }
+    return used;
+}
+
 // Add an item to the Hash Table
 template <typename T>
 bool HashTable<T>::add(const T &item)
@@ -318,7 +329,7 @@ int partitionByPrice(Array<T, 211> &arr, int low, int high, bool ascending) {
 }
 
 template <typename T>
-void HashTable<T>::sortByPrice(bool ascending) {
+Array<T, 211> HashTable<T>::sortByPrice(bool ascending) {
     Array<T, 211> arr;
     for (int i = 0; i < tableSize; ++i) {
         if (occupied[i] && !tombstone[i]) {
@@ -331,6 +342,7 @@ void HashTable<T>::sortByPrice(bool ascending) {
     for (int i = 0; i < arr.getSize(); ++i) {
         cout << arr[i] << endl;
     }
+    return arr;
 }
 
 template <typename T>
@@ -376,7 +388,7 @@ int partitionByTotal(Array<T, 211> &arr, int low, int high, bool ascending) {
 // }
 
 template <typename T>
-void HashTable<T>::sortByTotal(bool ascending, time_t startTime, time_t endTime) {
+Array<T, 211> HashTable<T>::sortByTotal(bool ascending, time_t startTime, time_t endTime) {
     // Print the time range
     cout << "Sorting by total within the date range: "
          << put_time(localtime(&startTime), "%Y-%m-%d %H:%M:%S")
@@ -402,6 +414,7 @@ void HashTable<T>::sortByTotal(bool ascending, time_t startTime, time_t endTime)
     for (int i = 0; i < arr.getSize(); ++i) {
         cout << arr[i] << endl;
     }
+    return arr;
 }
 
 
@@ -465,8 +478,8 @@ ostream &operator<<(ostream &os, const HashTable<T> &hashTable)
 }
 
 // Prime Numbers Array
-template <typename T>
-const int HashTable<T>::PRIMES[] = {101, 211, 431, 863, 1723, 3467, 6949, 14033, 28067};
+// template <typename T>
+// const int HashTable<T>::PRIMES[] = {101, 211, 431, 863, 1723, 3467, 6949, 14033, 28067};
 
 // Load Factor
 template <typename T>

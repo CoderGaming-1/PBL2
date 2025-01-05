@@ -4,13 +4,20 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QHeaderView>
+#include <HashTable.cpp>
+#include <Order.h>
 #include "DetailOrderWindow.h"
+#include "Array.cpp"
+HashTable<Order> orderHashTable;
+
 StatisticWindow::StatisticWindow(QWidget *parent)
     : QWidget(parent) {
     // Initialize UI elements
     startDateEdit = new QDateTimeEdit(this);
     endDateEdit = new QDateTimeEdit(this);
     researchButton = new QPushButton("Research", this);
+    ascendButton = new QPushButton("Ascend", this);  // New Ascend button
+    descendButton = new QPushButton("Descend", this);  // New Descend button
     ordersTable = new QTableWidget(this);
 
     // Set up date edit widgets to display only the date (no time)
@@ -40,7 +47,11 @@ StatisticWindow::StatisticWindow(QWidget *parent)
     dateLayout->addWidget(endDateEdit);
     mainLayout->addLayout(dateLayout);
 
+    QHBoxLayout* buttonLayout = new QHBoxLayout();
     mainLayout->addWidget(researchButton);
+    buttonLayout->addWidget(ascendButton);  // Add Ascend button to layout
+    buttonLayout->addWidget(descendButton);  // Add Descend button to layout
+    mainLayout->addLayout(buttonLayout);
     mainLayout->addWidget(ordersTable);
 
     // Set the layout for the window
@@ -48,14 +59,129 @@ StatisticWindow::StatisticWindow(QWidget *parent)
 
     // Connect button click to the appropriate slot
     connect(researchButton, &QPushButton::clicked, this, &StatisticWindow::onResearchButtonClicked);
+    connect(ascendButton, &QPushButton::clicked, this, &StatisticWindow::onAscendButtonClicked);  // Ascend button
+    connect(descendButton, &QPushButton::clicked, this, &StatisticWindow::onDescendButtonClicked);  // Descend button
 
     // Connect row click to the onRowClicked slot (passing row and column as arguments)
     connect(ordersTable, &QTableWidget::cellClicked, this, &StatisticWindow::onRowClicked);
 
     // Populate the table with initial data
     filterOrdersByDate(QDateTime::fromString("01/01/2000", "dd/MM/yyyy"), QDateTime::currentDateTime(), ordersTable);
+
+    orderHashTable.readFile("C:/AllFiles/CODE/C++/Data/orders.txt");
+    cout << "lllllllllllllllll" << orderHashTable << '\n';
 }
 
+time_t convertToTimeT(const QDateTimeEdit* dateTimeEdit) {
+    QDateTime dateTime = dateTimeEdit->dateTime(); // Get the QDateTime from the QDateTimeEdit
+    return dateTime.toSecsSinceEpoch(); // Convert to time_t
+}
+
+void StatisticWindow::onAscendButtonClicked() {
+    QTime endOfDay(23, 59, 59);
+    endDateEdit->setTime(endOfDay);
+    QVector<Order_2> filteredOrders = getFilteredOrders(startDateEdit->dateTime(), endDateEdit->dateTime());
+    // Sort by the 3rd column (TotalPayment) in ascending order
+    // ordersTable->sortItems(2, Qt::AscendingOrder);
+    orderHashTable.readFile("C:/AllFiles/CODE/C++/Data/orders.txt");
+    ordersTable->clear();
+    ordersTable->setRowCount(0);
+    ordersTable->setColumnCount(5);  // Update to 5 to add the "Detail" column
+    ordersTable->setHorizontalHeaderLabels({"OrderID", "Name Client", "TotalPayment", "Date Purchase", "More Information"});
+
+    // Set the table to stretch horizontally
+    ordersTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    Array<Order, 211> sortOrder = orderHashTable.sortByTotal(true, convertToTimeT(startDateEdit), convertToTimeT(endDateEdit));
+    qDebug() << convertToTimeT(endDateEdit) << "      " << endDateEdit->dateTime() << "\n";
+    int row = ordersTable->rowCount();
+    int i = 0;
+    for (const Order_2& order : filteredOrders)
+    {
+        int id = sortOrder[i].getId();
+        QString nameClient = QString::fromStdString(sortOrder[i].getCustomerName());
+        double totalPayment = sortOrder[i].getTotalAmount();
+        QString date = QDateTime::fromSecsSinceEpoch(sortOrder[i].getDatetime()).toString("dd/MM/yyyy HH:mm");
+
+        ordersTable->insertRow(row);
+
+        QTableWidgetItem* orderID = new QTableWidgetItem(id);
+        ordersTable->setItem(row, 0, orderID);
+
+        QTableWidgetItem* name = new QTableWidgetItem(nameClient);
+        ordersTable->setItem(row, 1, name);
+
+        QTableWidgetItem* totalAmount = new QTableWidgetItem(QString::number(totalPayment, 'f', 2));
+        ordersTable->setItem(row, 2, totalAmount);
+
+        QTableWidgetItem* datetime = new QTableWidgetItem(date);
+        ordersTable->setItem(row, 3, datetime);
+
+        QPushButton* detailButton = new QPushButton("Details", this);
+        detailButton->setFixedSize(155, 30);  // Set size of the button
+        ordersTable->setCellWidget(row, 4, detailButton);  // Place the button in the 5th column (index 4)
+
+        // Connect the button click to show the order details
+        connect(detailButton, &QPushButton::clicked, this, [this, order]() {
+            showOrderDetails(order);
+        });
+
+        i++;
+        row++; // Move to the next row
+    }
+}
+
+void StatisticWindow::onDescendButtonClicked() {
+    QTime endOfDay(23, 59, 59);
+    endDateEdit->setTime(endOfDay);
+    QVector<Order_2> filteredOrders = getFilteredOrders(startDateEdit->dateTime(), endDateEdit->dateTime());
+    // Sort by the 3rd column (TotalPayment) in ascending order
+    // ordersTable->sortItems(2, Qt::AscendingOrder);
+    orderHashTable.readFile("C:/AllFiles/CODE/C++/Data/orders.txt");
+    ordersTable->clear();
+    ordersTable->setRowCount(0);
+    ordersTable->setColumnCount(5);  // Update to 5 to add the "Detail" column
+    ordersTable->setHorizontalHeaderLabels({"OrderID", "Name Client", "TotalPayment", "Date Purchase", "More Information"});
+
+    // Set the table to stretch horizontally
+    ordersTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    Array<Order, 211> sortOrder = orderHashTable.sortByTotal(false, convertToTimeT(startDateEdit), convertToTimeT(endDateEdit));
+    qDebug() << convertToTimeT(endDateEdit) << "      " << endDateEdit->dateTime() << "\n";
+    int row = ordersTable->rowCount();
+    int i = 0;
+    for (const Order_2& order : filteredOrders)
+    {
+        int id = sortOrder[i].getId();
+        QString nameClient = QString::fromStdString(sortOrder[i].getCustomerName());
+        double totalPayment = sortOrder[i].getTotalAmount();
+        QString date = QDateTime::fromSecsSinceEpoch(sortOrder[i].getDatetime()).toString("dd/MM/yyyy HH:mm");
+
+        ordersTable->insertRow(row);
+
+        QTableWidgetItem* orderID = new QTableWidgetItem(id);
+        ordersTable->setItem(row, 0, orderID);
+
+        QTableWidgetItem* name = new QTableWidgetItem(nameClient);
+        ordersTable->setItem(row, 1, name);
+
+        QTableWidgetItem* totalAmount = new QTableWidgetItem(QString::number(totalPayment, 'f', 2));
+        ordersTable->setItem(row, 2, totalAmount);
+
+        QTableWidgetItem* datetime = new QTableWidgetItem(date);
+        ordersTable->setItem(row, 3, datetime);
+
+        QPushButton* detailButton = new QPushButton("Details", this);
+        detailButton->setFixedSize(155, 30);  // Set size of the button
+        ordersTable->setCellWidget(row, 4, detailButton);  // Place the button in the 5th column (index 4)
+
+        // Connect the button click to show the order details
+        connect(detailButton, &QPushButton::clicked, this, [this, order]() {
+            showOrderDetails(order);
+        });
+
+        i++;
+        row++; // Move to the next row
+    }
+}
 
 // Inside your `StatisticWindow` class where you are calling `showOrderDetails`
 void StatisticWindow::onRowClicked(int row, int column) {
@@ -276,7 +402,7 @@ void StatisticWindow::filterOrdersByDate(const QDateTime& startDate, const QDate
         table->setItem(row, 3, new QTableWidgetItem(order.datetime.toString("dd/MM/yyyy HH:mm")));
 
         // Add a button to the "Detail" column
-        QPushButton* detailButton = new QPushButton("hint", this);
+        QPushButton* detailButton = new QPushButton("Details", this);
         detailButton->setFixedSize(155, 30);  // Set size of the button
         table->setCellWidget(row, 4, detailButton);  // Place the button in the 5th column (index 4)
 
@@ -313,6 +439,8 @@ void StatisticWindow::showOrderDetails(const Order_2& order) {
 
 void StatisticWindow::onResearchButtonClicked() {
     // Get the selected date range
+    QTime endOfDay(23, 59, 59);
+    endDateEdit->setTime(endOfDay);
     QDateTime startDate = startDateEdit->dateTime();
     QDateTime endDate = endDateEdit->dateTime();
 

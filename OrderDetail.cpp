@@ -10,7 +10,7 @@
 #include <QTextStream>
 #include <QRandomGenerator>
 #include <QLineEdit>
-
+#include <QMessageBox>
 OrderDetail::OrderDetail(QWidget* parent) : QMainWindow(parent) {
     setupUI();
 
@@ -59,10 +59,11 @@ void OrderDetail::setupUI() {
 
     // Table Section
     itemsTable = new QTableWidget(this);
-    itemsTable->setColumnCount(3);
-    QStringList headers = {"Item Name", "Quantity", "Price"};
+    itemsTable->setColumnCount(4); // Update to 4 columns
+    QStringList headers = {"Item Name", "Quantity", "Price", "Product ID"}; // Add "Product ID"
     itemsTable->setHorizontalHeaderLabels(headers);
     itemsTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
     itemsTable->setSelectionMode(QAbstractItemView::NoSelection);
     itemsTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
@@ -99,26 +100,34 @@ void OrderDetail::setupUI() {
     connect(cancelButton, &QPushButton::clicked, this, &OrderDetail::close);
 }
 
-void OrderDetail::populateTable(const QList<QList<QString>>& filteredProducts) {
-    this->filteredProducts = filteredProducts;  // Store it in the member variable
+void OrderDetail::populateTable(const vector<QList<QString>>& filteredProducts) {
+    this->filteredProducts = filteredProducts;  // Store the member variable
     itemsTable->setRowCount(filteredProducts.size());
     double totalPrice = 0.0;
 
-    for (int row = 0; row < filteredProducts.size(); ++row) {
+    for (int row = 0; row < int(filteredProducts.size()); ++row) {
         const QList<QString>& product = filteredProducts[row];
 
+        // Populate each cell in the row
         QTableWidgetItem* nameItem = new QTableWidgetItem(product[0]);
         QTableWidgetItem* quantityItem = new QTableWidgetItem(product[2]);
         QTableWidgetItem* priceItem = new QTableWidgetItem(product[1]);
+        QTableWidgetItem* idItem = new QTableWidgetItem(product[3]); // Add Product ID
 
         itemsTable->setItem(row, 0, nameItem);
         itemsTable->setItem(row, 1, quantityItem);
         itemsTable->setItem(row, 2, priceItem);
+        itemsTable->setItem(row, 3, idItem); // Set ID in 4th column
 
-        // Convert price and quantity to double and calculate item total
-        double price = product[1].toDouble();
-        int quantity = product[2].toInt();
-        totalPrice += price * quantity; // Accumulate the total price
+        // Calculate total price
+        bool priceOk, quantityOk;
+        double price = product[1].toDouble(&priceOk);
+        int quantity = product[2].toInt(&quantityOk);
+        if (priceOk && quantityOk) {
+            totalPrice += price * quantity;
+        } else {
+            qDebug() << "Invalid data for product:" << product;
+        }
     }
 
     // Update total price label
@@ -127,63 +136,100 @@ void OrderDetail::populateTable(const QList<QList<QString>>& filteredProducts) {
 }
 
 
-void OrderDetail::generateOrderCode(const QList<QList<QString>>& filteredProducts) {
-    int randomCode = QRandomGenerator::global()->bounded(1, 1001);  // Generate code between 0001 and 1000
-    orderCode = QString::number(randomCode).rightJustified(4, '0'); // Ensure it's 4 digits
-    orderCodeLabel->setText("OrderNumber: " + orderCode);
+void OrderDetail::generateOrderCode(const vector<QList<QString>>& filteredProducts) {
+    // int randomCode = QRandomGenerator::global()->bounded(1, 1001);  // Generate code between 0001 and 1000
+    // orderCode = QString::number(randomCode).rightJustified(4, '0'); // Ensure it's 4 digits
+    // orderCodeLabel->setText("OrderNumber: " + orderCode);
+    QString filePath = "C:/AllFiles/CODE/C++/Data/orders.txt";
+    QFile file(filePath);
+
+    // Open file to read the last used index
+    int lastIndex = 0;
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&file);
+        QString lastLine;
+        while (!in.atEnd()) {
+            lastLine = in.readLine();
+        }
+
+        // Extract last index from the last line
+        if (!lastLine.isEmpty()) {
+            QStringList fields = lastLine.split(',');
+            if (!fields.isEmpty()) {
+                lastIndex = fields[0].toInt(); // Get the index from the first column
+            }
+        }
+        file.close();
+    }
+    int orderIndex = lastIndex + 1;
+    orderCodeLabel->setText("OrderNumber: " + QString::number(orderIndex));
 
     handlePrint(filteredProducts);  // Pass filteredProducts when calling handlePrint
 }
 
-void OrderDetail::handlePrint(const QList<QList<QString>>& filteredProducts) {
+#include <QMessageBox> // Include QMessageBox for success notification
+
+void OrderDetail::handlePrint(const vector<QList<QString>>& filteredProducts) {
     QString filePath = "C:/AllFiles/CODE/C++/Data/orders.txt";
     QFile file(filePath);
 
+    // Open file to read the last used index
+    int lastIndex = 0;
+    if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        QTextStream in(&file);
+        QString lastLine;
+        while (!in.atEnd()) {
+            lastLine = in.readLine();
+        }
+
+        // Extract last index from the last line
+        if (!lastLine.isEmpty()) {
+            QStringList fields = lastLine.split(',');
+            if (!fields.isEmpty()) {
+                lastIndex = fields[0].toInt(); // Get the index from the first column
+            }
+        }
+        file.close();
+    }
+
+    // Get customer name and check if it's "Unknown"
+    QString customerName = customerField->text().isEmpty() ? "Unknown" : customerField->text();
+    if (customerName == "Unknown") {
+        qDebug() << "Skipping order for unknown customer.";
+        return; // Skip the saving process if customer is "Unknown"
+    }
+
+    // Increment index for the new order
+    int orderIndex = lastIndex + 1;
+
+    // Open file to append the new order
     if (!file.open(QIODevice::Append | QIODevice::Text)) {
         qDebug() << "Failed to open file for writing:" << filePath;
         return;
     }
 
     QTextStream out(&file);
-    QString dateTime = QDateTime::currentDateTime().toString("dd/MM/yyyy HH:mm");
 
-    QString customerName = customerField->text().isEmpty() ? "Unknown" : customerField->text();
+    QString dateTime = QDateTime::currentDateTime().toString("yyyy-MM-dd HH:mm:ss");
     QString totalPrice = totalPriceLabel->text();
 
-    // Initialize the item details string
-    QString itemDetails;
-
-    // Loop through filteredProducts and build the item details string
-    if (filteredProducts.size() > 1) {
-        QStringList itemsList;  // To store individual item details
-        for (const QList<QString>& product : filteredProducts) {
-            // Check if the type (product[3]) is empty, and exclude the parentheses if it is
-            QString itemDetail;
-            if (product[3].isEmpty()) {
-                itemDetail = QString("%1 %2").arg(product[0]).arg(product[2]); // Name Quantity
-            } else {
-                itemDetail = QString("%1 (%2) %3").arg(product[0]).arg(product[3]).arg(product[2]); // Name (Type) Quantity
-            }
-            itemsList.append(itemDetail);
-        }
-        itemDetails = itemsList.join(" ; "); // Join all items with a semicolon and space
-    } else {
-        const QList<QString>& product = filteredProducts.first();
-        // Check if the type (product[3]) is empty, and exclude the parentheses if it is
-        if (product[3].isEmpty()) {
-            itemDetails = QString("%1 %2").arg(product[0]).arg(product[2]); // Name Quantity
-        } else {
-            itemDetails = QString("%1 (%2) %3").arg(product[0]).arg(product[3]).arg(product[2]); // Name (Type) Quantity
-        }
+    QStringList itemsList; // To store "productId,quantity"
+    for (const QList<QString>& product : filteredProducts) {
+        itemsList.append(QString("%1,%2").arg(product[3]).arg(product[2])); // ID, Quantity
     }
 
-    // Write the order details into the file
-    out << orderCode << " "
-        << customerName << " "
-        << totalPrice << " "
-        << dateTime << " "
-        << itemDetails << "\n";
+    QString items = itemsList.join(";"); // Join all items with semicolon
+
+    // Write to file in the required format
+    out << '\n' << orderIndex << "," // Use dynamically calculated index
+        << customerName << ",\""
+        << items << "\","
+        << totalPrice << ","
+        << dateTime;
 
     file.close();
+    QMessageBox::information(this, "Order Saved", "Your order has been successfully saved!");
+
+    // Show success message
     qDebug() << "Order saved to" << filePath;
 }

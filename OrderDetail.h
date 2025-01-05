@@ -6,6 +6,8 @@
 #include <QMainWindow>
 #include <QTableWidget>
 #include <QList>
+#include <vector>
+using namespace std;
 
 class OrderDetail : public QMainWindow {
     Q_OBJECT
@@ -14,16 +16,16 @@ public:
     explicit OrderDetail(QWidget* parent = nullptr);
     ~OrderDetail();
 
-    void populateTable(const QList<QList<QString>>& filteredProducts);
-    void handlePrint(const QList<QList<QString>>& filteredProducts);
-    void generateOrderCode(const QList<QList<QString>>& filteredProducts);
+    void populateTable(const vector<QList<QString>>& filteredProducts);
+    void handlePrint(const vector<QList<QString>>& filteredProducts);
+    void generateOrderCode(const vector<QList<QString>>& filteredProducts);
     void clicked(bool checked);
 
 private:
     void setupUI();
     void loadDataFromFile(); // Declaration for the function to load data from the file
     QLineEdit* customerField;
-    QList<QList<QString>> filteredProducts;
+    vector<QList<QString>> filteredProducts;
     QString orderCode;
     QLabel* orderCodeLabel;
     QLabel* totalPriceLabel;

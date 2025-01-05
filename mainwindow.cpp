@@ -30,7 +30,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
     HashTable<Drink> drinkTable;
     HashTable<Order> orderTable;
     burgerTable.readFile("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
-    drinkTable.readFile("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
+    drinkTable.readFile("C:/AllFiles/CODE/C++/Data/input_drinks.txt");
     orderTable.readFile("C:/AllFiles/CODE/C++/Data/orders.txt");
     cout << "xxxxxxxxxxx" << orderTable << '\n';
 }
@@ -174,11 +174,198 @@ void MainWindow::setupTable() {
 
 
 void MainWindow::sortAscending() {
-    tableWidget->sortItems(1, Qt::AscendingOrder);  // Cột 1 là cột Price
+    // tableWidget->sortItems(1, Qt::AscendingOrder);  // Cột 1 là cột Price
+    HashTable<Burger> burgerTable;
+    HashTable<Drink> drinkTable;
+    HashTable<Order> orderTable;
+    burgerTable.readFile("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
+    drinkTable.readFile("C:/AllFiles/CODE/C++/Data/input_drinks.txt");
+    orderTable.readFile("C:/AllFiles/CODE/C++/Data/orders.txt");
+    Array<Burger, 211> sortBurger = burgerTable.sortByPrice(true);
+    Array<Drink, 211> sortDrink = drinkTable.sortByPrice(true);
+    tableWidget->clear();
+    tableWidget->setRowCount(0);
+    tableWidget->setColumnCount(5);
+    QStringList headers = {"Name", "Price", "Quantity", "Increment", "Decrement"};
+    tableWidget->setHorizontalHeaderLabels(headers);
+    int row = tableWidget->rowCount();
+    for (int i = 0; i < burgerTable.getUsedSlot(); i++)
+    {
+        QString name = QString::fromStdString(sortBurger[i].getName());
+        QString description = QString::fromStdString(sortBurger[i].getDescription());
+        double price = sortBurger[i].getPrice();
+        QString size = QString::fromStdString(sortBurger[i].getPattyType());
+
+        // cout << "  " << name.toStdString() << "  " << description.toStdString() << "  " << price << "  " << size.toStdString() << '\n';
+
+        // Append the size to the name
+        QString nameWithSize = QString("%1 (%2)").arg(name).arg(size);
+
+        // Default quantity is 0
+        QString quantityStr = "0";
+
+        tableWidget->insertRow(row);
+
+        QTableWidgetItem* nameItem = new QTableWidgetItem(nameWithSize);
+        tableWidget->setItem(row, 0, nameItem);
+
+        QTableWidgetItem* priceItem = new QTableWidgetItem(QString::number(price, 'f', 2));
+        priceItem->setTextAlignment(Qt::AlignRight);
+        tableWidget->setItem(row, 1, priceItem);
+
+        QTableWidgetItem* quantityItem = new QTableWidgetItem(quantityStr);
+        tableWidget->setItem(row, 2, quantityItem);
+
+        QPushButton* incrementButton = new QPushButton("+");
+        incrementButton->setProperty("row", row);
+        connect(incrementButton, &QPushButton::clicked, this, &MainWindow::handleIncrement);
+        tableWidget->setCellWidget(row, 3, incrementButton);
+
+        QPushButton* decrementButton = new QPushButton("-");
+        decrementButton->setProperty("row", row);
+        connect(decrementButton, &QPushButton::clicked, this, &MainWindow::handleDecrement);
+        tableWidget->setCellWidget(row, 4, decrementButton);
+
+        row++; // Move to the next row
+    }
+
+    for (int i = 0; i < burgerTable.getUsedSlot(); i++)
+    {
+        QString name = QString::fromStdString(sortDrink[i].getName());
+        QString description = QString::fromStdString(sortDrink[i].getDescription());
+        double price = sortDrink[i].getPrice();
+        QString size = QString::fromStdString(sortDrink[i].getSize());
+
+        // cout << "  " << name.toStdString() << "  " << description.toStdString() << "  " << price << "  " << size.toStdString() << '\n';
+
+        // Append the size to the name
+        QString nameWithSize = QString("%1 (%2)").arg(name).arg(size);
+
+        // Default quantity is 0
+        QString quantityStr = "0";
+
+        tableWidget->insertRow(row);
+
+        QTableWidgetItem* nameItem = new QTableWidgetItem(nameWithSize);
+        tableWidget->setItem(row, 0, nameItem);
+
+        QTableWidgetItem* priceItem = new QTableWidgetItem(QString::number(price, 'f', 2));
+        priceItem->setTextAlignment(Qt::AlignRight);
+        tableWidget->setItem(row, 1, priceItem);
+
+        QTableWidgetItem* quantityItem = new QTableWidgetItem(quantityStr);
+        tableWidget->setItem(row, 2, quantityItem);
+
+        QPushButton* incrementButton = new QPushButton("+");
+        incrementButton->setProperty("row", row);
+        connect(incrementButton, &QPushButton::clicked, this, &MainWindow::handleIncrement);
+        tableWidget->setCellWidget(row, 3, incrementButton);
+
+        QPushButton* decrementButton = new QPushButton("-");
+        decrementButton->setProperty("row", row);
+        connect(decrementButton, &QPushButton::clicked, this, &MainWindow::handleDecrement);
+        tableWidget->setCellWidget(row, 4, decrementButton);
+
+        row++; // Move to the next row
+    }
 }
 
 void MainWindow::sortDescending() {
-    tableWidget->sortItems(1, Qt::DescendingOrder);  // Cột 1 là cột Price
+    // tableWidget->sortItems(1, Qt::DescendingOrder);  // Cột 1 là cột Price
+    // tableWidget->sortItems(1, Qt::AscendingOrder);  // Cột 1 là cột Price
+    HashTable<Burger> burgerTable;
+    HashTable<Drink> drinkTable;
+    HashTable<Order> orderTable;
+    burgerTable.readFile("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
+    drinkTable.readFile("C:/AllFiles/CODE/C++/Data/input_drinks.txt");
+    orderTable.readFile("C:/AllFiles/CODE/C++/Data/orders.txt");
+    Array<Burger, 211> sortBurger = burgerTable.sortByPrice(false);
+    Array<Drink, 211> sortDrink = drinkTable.sortByPrice(false);
+    tableWidget->clear();
+    tableWidget->setRowCount(0);
+    tableWidget->setColumnCount(5);
+    QStringList headers = {"Name", "Price", "Quantity", "Increment", "Decrement"};
+    tableWidget->setHorizontalHeaderLabels(headers);
+    int row = tableWidget->rowCount();
+    for (int i = 0; i < burgerTable.getUsedSlot(); i++)
+    {
+        QString name = QString::fromStdString(sortBurger[i].getName());
+        QString description = QString::fromStdString(sortBurger[i].getDescription());
+        double price = sortBurger[i].getPrice();
+        QString size = QString::fromStdString(sortBurger[i].getPattyType());
+
+        // cout << "  " << name.toStdString() << "  " << description.toStdString() << "  " << price << "  " << size.toStdString() << '\n';
+
+        // Append the size to the name
+        QString nameWithSize = QString("%1 (%2)").arg(name).arg(size);
+
+        // Default quantity is 0
+        QString quantityStr = "0";
+
+        tableWidget->insertRow(row);
+
+        QTableWidgetItem* nameItem = new QTableWidgetItem(nameWithSize);
+        tableWidget->setItem(row, 0, nameItem);
+
+        QTableWidgetItem* priceItem = new QTableWidgetItem(QString::number(price, 'f', 2));
+        priceItem->setTextAlignment(Qt::AlignRight);
+        tableWidget->setItem(row, 1, priceItem);
+
+        QTableWidgetItem* quantityItem = new QTableWidgetItem(quantityStr);
+        tableWidget->setItem(row, 2, quantityItem);
+
+        QPushButton* incrementButton = new QPushButton("+");
+        incrementButton->setProperty("row", row);
+        connect(incrementButton, &QPushButton::clicked, this, &MainWindow::handleIncrement);
+        tableWidget->setCellWidget(row, 3, incrementButton);
+
+        QPushButton* decrementButton = new QPushButton("-");
+        decrementButton->setProperty("row", row);
+        connect(decrementButton, &QPushButton::clicked, this, &MainWindow::handleDecrement);
+        tableWidget->setCellWidget(row, 4, decrementButton);
+
+        row++; // Move to the next row
+    }
+
+    for (int i = 0; i < burgerTable.getUsedSlot(); i++)
+    {
+        QString name = QString::fromStdString(sortDrink[i].getName());
+        QString description = QString::fromStdString(sortDrink[i].getDescription());
+        double price = sortDrink[i].getPrice();
+        QString size = QString::fromStdString(sortDrink[i].getSize());
+
+        // cout << "  " << name.toStdString() << "  " << description.toStdString() << "  " << price << "  " << size.toStdString() << '\n';
+
+        // Append the size to the name
+        QString nameWithSize = QString("%1 (%2)").arg(name).arg(size);
+
+        // Default quantity is 0
+        QString quantityStr = "0";
+
+        tableWidget->insertRow(row);
+
+        QTableWidgetItem* nameItem = new QTableWidgetItem(nameWithSize);
+        tableWidget->setItem(row, 0, nameItem);
+
+        QTableWidgetItem* priceItem = new QTableWidgetItem(QString::number(price, 'f', 2));
+        priceItem->setTextAlignment(Qt::AlignRight);
+        tableWidget->setItem(row, 1, priceItem);
+
+        QTableWidgetItem* quantityItem = new QTableWidgetItem(quantityStr);
+        tableWidget->setItem(row, 2, quantityItem);
+
+        QPushButton* incrementButton = new QPushButton("+");
+        incrementButton->setProperty("row", row);
+        connect(incrementButton, &QPushButton::clicked, this, &MainWindow::handleIncrement);
+        tableWidget->setCellWidget(row, 3, incrementButton);
+
+        QPushButton* decrementButton = new QPushButton("-");
+        decrementButton->setProperty("row", row);
+        connect(decrementButton, &QPushButton::clicked, this, &MainWindow::handleDecrement);
+        tableWidget->setCellWidget(row, 4, decrementButton);
+
+        row++; // Move to the next row
+    }
 }
 
 void MainWindow::loadFile(const QString& filePath) {
@@ -241,9 +428,48 @@ void MainWindow::loadFile(const QString& filePath) {
     file.close();
 }
 
-QList<QList<QString>> MainWindow::getFilteredProducts() {
-    QList<QList<QString>> filteredProducts;
+vector<QList<QString>> MainWindow::getFilteredProducts() {
+    vector<QList<QString>> filteredProducts;
+    QFile fileBurgers("C:/AllFiles/CODE/C++/Data/input_burgers.txt");
+    QFile fileDrinks("C:/AllFiles/CODE/C++/Data/input_drinks.txt");
 
+    // Load burger data
+    if (!fileBurgers.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open input_burgers.txt";
+    } else {
+        QTextStream inBurgers(&fileBurgers);
+        while (!inBurgers.atEnd()) {
+            QString line = inBurgers.readLine();
+            QStringList fields = line.split(",", Qt::SkipEmptyParts);
+
+            if (fields.size() >= 6) {  // Đảm bảo có đủ 6 trường dữ liệu
+                QString id = fields[0].trimmed();
+
+                // Lưu thông tin vào các danh sách
+                productIds.append(id);
+            }
+        }
+        fileBurgers.close();
+    }
+
+    // Load drink data
+    if (!fileDrinks.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Failed to open input_drinks.txt";
+    } else {
+        QTextStream inDrinks(&fileDrinks);
+        while (!inDrinks.atEnd()) {
+            QString line = inDrinks.readLine();
+            QStringList fields = line.split(",", Qt::SkipEmptyParts);
+
+            if (fields.size() >= 5) {  // Đảm bảo có đủ 5 trường dữ liệu
+                QString id = fields[0].trimmed();
+
+                // Lưu thông tin vào các danh sách
+                productIds.append(id);
+            }
+        }
+        fileDrinks.close();
+    }
     for (int row = 0; row < tableWidget->rowCount(); ++row) {
         QTableWidgetItem* quantityItem = tableWidget->item(row, 2);
         if (!quantityItem) {
@@ -254,14 +480,40 @@ QList<QList<QString>> MainWindow::getFilteredProducts() {
         int quantity = quantityItem->text().toInt();
         qDebug() << "Row" << row << "quantity:" << quantity;
 
+        // // if (quantity >= 1) {
+        // //     QList<QString> productData;
+        // //     for (int col = 0; col < tableWidget->columnCount(); ++col) {
+        // //         QTableWidgetItem* item = tableWidget->item(row, col);
+        // //         productData.append(item ? item->text() : "");
+        // //     }
+        // //     filteredProducts.append(productData);
+        // // }
         if (quantity >= 1) {
             QList<QString> productData;
-            for (int col = 0; col < tableWidget->columnCount(); ++col) {
-                QTableWidgetItem* item = tableWidget->item(row, col);
-                productData.append(item ? item->text() : "");
+            // for (int col = 0; col < tableWidget->columnCount(); ++col) {
+            // Add product name, price, and quantity
+            QTableWidgetItem* nameItem = tableWidget->item(row, 0); // Name
+            QTableWidgetItem* priceItem = tableWidget->item(row, 1); // Price
+            QTableWidgetItem* quantityItem = tableWidget->item(row, 2); // Quantity
+            qDebug() << nameItem->text();
+            productData.append(nameItem ? nameItem->text() : ""); // Name
+            productData.append(priceItem ? priceItem->text() : ""); // Price
+            productData.append(quantityItem ? quantityItem->text() : ""); // Quantity
+
+            // Add the corresponding product ID
+            if (row < productIds.size()) {
+                productData.append(productIds[row]); // Product ID
+            } else {
+                qDebug() << "Row index" << row << "exceeds productIds size.";
+                productData.append(""); // Append empty string if ID not available
             }
-            filteredProducts.append(productData);
+            // productData.append(productIds[row]);
+            qDebug() << "Appending product data:" << productData;
+            // }
+            // Append the collected data to filteredProducts
+            filteredProducts.push_back(productData);
         }
+
     }
 
     qDebug() << "Filtered products:" << filteredProducts;
@@ -297,20 +549,9 @@ void MainWindow::handleShowAll() {
 }
 
 void MainWindow::openOrderDetail() {
-    QList<QList<QString>> filteredProducts = getFilteredProducts();
-
-    if (filteredProducts.isEmpty()) {
-        qDebug() << "No products to display in OrderDetail.";
-        return;
-    }
+    vector<QList<QString>> filteredProducts = getFilteredProducts();
 
     qDebug() << "Filtered products passed to OrderDetail:" << filteredProducts;
-
-    if (orderDetailWindow != nullptr) {
-        orderDetailWindow->close();
-        delete orderDetailWindow;
-        orderDetailWindow = nullptr;
-    }
 
     orderDetailWindow = new OrderDetail(this);
     orderDetailWindow->setAttribute(Qt::WA_DeleteOnClose);
@@ -320,7 +561,6 @@ void MainWindow::openOrderDetail() {
     orderDetailWindow->resize(800, 600);
     orderDetailWindow->show();
 }
-
 
 void MainWindow::openProductWindow() {
     qDebug() << "Product button clicked";
